@@ -1,5 +1,6 @@
 from flask import request
 from config import db
+from client.client import turma_existe
 
 class Atividade (db.Model):
     __tablename__ = "atividade"
@@ -32,7 +33,11 @@ def CriarAtividade(dados):
     id_turma = dados.get("id_turma")
     enunciado = dados.get("enunciado")
     if not id_turma or not enunciado:
-        return None, "id_turma e enunciado são obrigatórios"
+        return None, "ID da Turma é obrigatório"    
+    if not turma_existe(id_turma):
+        return None, "Turma não encontrada"
+    if not enunciado:
+        return None, "Enunciado é obrigatório"
 
     nova_atividade = Atividade(id_turma=id_turma, enunciado=enunciado)
     db.session.add(nova_atividade)
@@ -44,8 +49,18 @@ def AtualizarAtividade(idAtividade, dados):
     if not atividade:
         return None, "Atividade não encontrada"
 
-    atividade.id_turma = dados.get("id_turma", atividade.id_turma)
-    atividade.enunciado = dados.get("enunciado", atividade.enunciado)
+    id_turma = dados.get("id_turma")
+    if id_turma is not None:
+        if not turma_existe(id_turma):
+            return None, "Turma não encontrada"
+        atividade.id_turma = id_turma
+
+    enunciado = dados.get("enunciado")
+    if enunciado is not None:
+        if not enunciado:
+            return None, "Enunciado não pode ser vazio"
+        atividade.enunciado = enunciado
+
     db.session.commit()
     return atividade, None
 

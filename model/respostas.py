@@ -1,5 +1,6 @@
 from flask import request
 from config import db
+from client.client import aluno_existe
 
 class Resposta (db.Model):
     __tablename__ = "resposta"
@@ -37,6 +38,8 @@ def AdicionarRespostas(dados):
         return None, "Atividade é obrigatório"
     if not id_aluno:
         return None, "Aluno é obrigatório"
+    if not aluno_existe(id_aluno):
+        return None, "Aluno não encontrado"
     if not resposta:
         return None, "Respostas são obrigatórias"
 
@@ -50,10 +53,25 @@ def AtualizarResposta(idResposta, dados):
     if not resposta:
         return None, "Resposta não encontrada"
     
-    resposta.id_atividade = dados.get("id_atividade", resposta.id_atividade)
-    resposta.id_aluno = dados.get("id_aluno", resposta.id_aluno)
-    resposta.resposta = dados.get("resposta", resposta.resposta)
-    resposta.nota = dados.get("nota", resposta.nota)
+    id_aluno = dados.get("id_aluno")
+    if id_aluno is not None:
+        if not aluno_existe(id_aluno):
+            return None, "Aluno não encontrado"
+        resposta.id_aluno = id_aluno
+
+    id_atividade = dados.get("id_atividade")
+    if id_atividade is not None:
+        resposta.id_atividade = id_atividade
+
+    resposta_texto = dados.get("resposta")
+    if resposta_texto is not None:
+        if not resposta_texto:
+            return None, "Resposta não pode ser vazia"
+        resposta.resposta = resposta_texto
+
+    if "nota" in dados:
+        resposta.nota = dados.get("nota")
+
     db.session.commit()
     return resposta, None
 
