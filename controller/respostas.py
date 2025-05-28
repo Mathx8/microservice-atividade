@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from model.respostas import *
+from client.client import aluno_existe
 
 Resposta_Blueprint = Blueprint('resposta', __name__)
 
@@ -32,3 +33,10 @@ def delete_resposta(id):
     if not sucesso:
         return jsonify({"erro": erro}), 404
     return jsonify({"mensagem": "Resposta deletada com sucesso"})
+
+@Resposta_Blueprint.route('/validar_aluno/<int:aluno_id>', methods=["GET"])
+def validar_aluno(aluno_id):
+    existe = aluno_existe(aluno_id)
+    if not existe:
+        return jsonify({"valida": existe}), 404
+    return jsonify({"valida": existe})

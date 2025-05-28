@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify
 from model.atividade import *
+from client.client import turma_existe
 
 Atividade_Blueprint = Blueprint('atividade', __name__)
 
@@ -37,3 +38,10 @@ def delete_atividade(id):
     if not sucesso:
         return jsonify({"erro": erro}), 404
     return jsonify({"mensagem": "Atividade deletada com sucesso"})
+
+@Atividade_Blueprint.route('/validar_turma/<int:turma_id>', methods=["GET"])
+def validar_turma(turma_id):
+    existe = turma_existe(turma_id)
+    if not existe:
+        return jsonify({"valida": existe}), 404
+    return jsonify({"valida": existe})
